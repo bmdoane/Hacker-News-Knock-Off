@@ -1,11 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
-import ArticleList from './components/ArticleList'
+import StoryList from './components/StoryList'
 
 class App extends React.Component {
   render() {
-    return <ArticleList />
+    return <StoryList />
   }
 }
 
