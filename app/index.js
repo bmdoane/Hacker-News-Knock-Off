@@ -1,10 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
+import StoryList from './components/StoryList'
 
 class App extends React.Component {
   render() {
-    return <div>Hello there</div>
+    return <StoryList />
   }
 }
 
