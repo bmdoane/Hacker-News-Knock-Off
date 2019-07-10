@@ -7,84 +7,58 @@ class StoryList extends React.Component {
 
     this.state = {
       isLoaded: false,
-      topStoryIds: [],
-      newStoryIds: [],
       topStories: [],
       newStories: [],
     }
   }
 
   componentDidMount() {
-    this.fetchTopStoryIds()
-    this.fetchNewStoryIds()
+    this.fetchTopStories()
 
-    // this.getStories(this.state.topStoryIds)
   }
 
-  // Do I limit this to 50 here?  When?  Keep more for comments?
-  fetchTopStoryIds() {
+  fetchItem (id) {
+    return fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json?print=pretty`)
+      .then(res => res.json())
+  }
+
+  fetchTopStories() {
     fetch('https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty')
       .then(res => res.json())
-      .then(data => {
-        this.setState({
-          isLoaded: true,
-          topStoryIds: data.slice(0, 50)
-        })
-      })
-      .catch(error => console.log('topStoryIds data failed', error))
-  }
+      .then(ids => {
+        if (!ids) {
+          throw new Error('There was an error fetching posts')
+        }
+        return ids.slice(0, 50)
 
-  fetchNewStoryIds() {
-    fetch('https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty')
-      .then(res => res.json())
-      .then(data => {
-        this.setState({
-          isLoaded: true,
-          newStoryIds: data.slice(0, 50)
-        })
       })
-      .catch(error => console.log('newStoryIds data failed', error))
-  }
+      .then(ids => Promise.all(ids.map(this.fetchItem)))
+      .then(stories => this.setState({ 
+        topStories: stories,
+        isLoaded: true
+       }))
 
-  fetchStories(id) {
-    fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json?print=pretty`)
-      .then(res => res.json())
-      .then(story => {
-        console.log('stories', data)
-        return story
-      })
-  }
-
-  getStories(storyIds) {
-    console.log('boom')
-    return Promise.all([
-      storyIds.map(id => {
-        this.setState({ topStories: this.fetchStories(id) })
-      })
-    ])
   }
 
   render() {
-    const { isLoaded, topStoryIds, newStoryIds, topStories } = this.state
-    console.log('top', topStoryIds);
-    console.log('new', newStoryIds);
-    // No results here
+    const { isLoaded, topStories } = this.state
+    console.log('loaded', isLoaded)
     console.log('ts', topStories)
 
-    const storyIdList = topStoryIds.map(id => {
+    const storyList = topStories.map(story => {
       return (
-        <li key={id}>
-          {id}
+        <li key={story.id}>
+          {story.title}
         </li>
       )
     })
 
-    // if (!isLoaded) {
-    //   return <div>Loading...</div>
-    // }
+    if (!isLoaded) {
+      return <div>Loading...</div>
+    }
 
     return (
-      <ul>{storyIdList}</ul>
+      <ul>{storyList}</ul>
     )
   }
 }
