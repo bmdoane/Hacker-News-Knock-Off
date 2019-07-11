@@ -1,4 +1,6 @@
 import React from 'react'
+import { fetchTopStories } from '../utils/api'
+import StoryDescription from './StoryDescription'
 
 
 class StoryList extends React.Component {
@@ -9,35 +11,28 @@ class StoryList extends React.Component {
       isLoaded: false,
       topStories: [],
       newStories: [],
+      error: null
     }
+    this.handleFetch = this.handleFetch.bind(this)
   }
 
   componentDidMount() {
-    this.fetchTopStories()
+    this.handleFetch()
 
   }
 
-  fetchItem (id) {
-    return fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json?print=pretty`)
-      .then(res => res.json())
-  }
+  handleFetch() {
+    this.setState({
+      isLoaded: false,
+      topStories: []
+    })
 
-  fetchTopStories() {
-    fetch('https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty')
-      .then(res => res.json())
-      .then(ids => {
-        if (!ids) {
-          throw new Error('There was an error fetching posts')
-        }
-        return ids.slice(0, 50)
-
-      })
-      .then(ids => Promise.all(ids.map(this.fetchItem)))
-      .then(stories => this.setState({ 
+    fetchTopStories()
+      .then(stories => this.setState({
         topStories: stories,
-        isLoaded: true
-       }))
-
+        isLoaded: true,
+        error: null
+      }))
   }
 
   render() {
@@ -45,20 +40,20 @@ class StoryList extends React.Component {
     console.log('loaded', isLoaded)
     console.log('ts', topStories)
 
-    const storyList = topStories.map(story => {
-      return (
-        <li key={story.id}>
-          {story.title}
-        </li>
-      )
-    })
+    // const storiesList = topStories.map(story => {
+    //   return (
+    //     <div key={story.id}>
+    //       {story.title}
+    //     </div>
+    //   )
+    // })
 
     if (!isLoaded) {
       return <div>Loading...</div>
     }
 
     return (
-      <ul>{storyList}</ul>
+      <StoryDescription topStories={topStories}/>
     )
   }
 }
